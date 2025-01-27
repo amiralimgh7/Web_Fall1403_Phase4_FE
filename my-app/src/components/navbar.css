@@ -1,0 +1,49 @@
+:root {
+    --menu-bg-color: #6C63FF;
+    --menu-section-bg-color: #3F3D56;
+    --input-focus-color: #28a745;
+}
+
+.menu {
+    background-color: var(--menu-bg-color);
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    margin-top: 60px;
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.menu-section {
+    background-color: var(--menu-section-bg-color);
+    padding: 15px 40px;
+    border-radius: 15px;
+    text-align: center;
+    flex-grow: 1;
+    margin: 0 10px;
+}
+
+.menu-section a {
+    color: #fff;
+    font-size: 18px;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.menu-section a:hover {
+    color: var(--input-focus-color);
+}
+
+/* حالت تاریک */
+body.dark-mode .menu {
+    background-color: rgba(0, 0, 0, 0.95);
+}
+
+body.dark-mode .menu-section {
+    background-color: #333;
+}
+
+body.dark-mode .menu-section a:hover {
+    color: #555;
+}

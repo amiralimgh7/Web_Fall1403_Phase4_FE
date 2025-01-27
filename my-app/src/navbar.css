@@ -1,0 +1,77 @@
+:root {
+    --navbar-bg: rgba(255, 255, 255, 0.15);
+    --navbar-border: rgba(255, 255, 255, 0.3);
+    --hover-color: #ffcd61;
+    --text-color: #fff;
+    --dark-bg: #111;
+  }
+  
+  .navbar-container {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 999;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: var(--navbar-bg);
+    border-bottom: 1px solid var(--navbar-border);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    padding: 0 20px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* لوگو */
+  .navbar-logo {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: transform 0.3s;
+  }
+  .navbar-logo img {
+    width: 40px;
+    margin-left: 8px;
+  }
+  
+  .navbar-logo:hover {
+    transform: scale(1.05);
+  }
+  
+  /* منو (لینک‌های اصلی) */
+  .navbar-links {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .navbar-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 16px;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .navbar-links a:hover {
+    background-color: var(--hover-color);
+    color: #000;
+    transform: translateY(-2px);
+  }
+  
+  /* حالت تاریک */
+  body.dark-mode .navbar-container {
+    background-color: var(--dark-bg);
+    border-bottom: 1px solid #444;
+  }
+  
+  body.dark-mode .navbar-links a:hover {
+    background-color: #444;
+    color: #fff;
+  }
+  
