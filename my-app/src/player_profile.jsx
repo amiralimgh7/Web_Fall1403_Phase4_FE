@@ -120,9 +120,9 @@ const PlayerProfile = () => {
             <h2>پروفایل بازیکن</h2>
             <p>نام: {profile.username}</p>
             <p>امتیاز کل: {profile.score}</p>
-            <p>سوالات پاسخ‌داده‌شده: {profile.answered_count}</p>
-            <p> فالویینگ ها : {profile.pfollowing_count}</p>
-            <p>فالور ها: {profile.follower_count}</p>
+            <p>سوالات پاسخ‌داده‌شده: {profile.question_count}</p>
+            {/* <p> فالویینگ ها : {profile.pfollowing_count}</p>
+            <p>فالور ها: {profile.follower_count}</p> */}
        
           </>
         ) : (
