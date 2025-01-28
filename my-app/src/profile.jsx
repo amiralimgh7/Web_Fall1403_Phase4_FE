@@ -8,15 +8,32 @@ const DesignerProfile = () => {
 
   useEffect(() => {
     const username = localStorage.getItem("username");
+    // خواندن توکن از حافظه
+    const token = localStorage.getItem("userToken");
 
+    // بررسی نام کاربری و توکن
     if (!username) {
       setError("نام کاربری پیدا نشد. لطفاً وارد شوید.");
+      return;
+    }
+    if (!token) {
+      setError("توکن یافت نشد. لطفاً ابتدا وارد شوید.");
       return;
     }
 
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/user-profile?username=${username}`);
+        // ارسال درخواست با هدر Authorization
+        const response = await fetch(
+          `http://localhost:8080/user-profile?username=${username}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         if (response.ok) {
           const result = await response.json();
           if (result.responseHeader === "OK") {
@@ -25,7 +42,7 @@ const DesignerProfile = () => {
             setError("خطایی در دریافت اطلاعات پروفایل رخ داده است.");
           }
         } else {
-          setError("خطا در برقراری ارتباط با سرور.");
+          setError(`خطا در برقراری ارتباط با سرور. (status: ${response.status})`);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -36,11 +53,19 @@ const DesignerProfile = () => {
     fetchProfile();
   }, []);
 
+  const handleToggleDarkMode = () => {
+    document.body.classList.toggle("dark-mode");
+  };
+
   return (
     <div className="main-container">
       <DesignerNavbar />
 
-      <button id="dark-mode-toggle" className="dark-mode-btn" onClick={() => document.body.classList.toggle("dark-mode")}>
+      <button
+        id="dark-mode-toggle"
+        className="dark-mode-btn"
+        onClick={handleToggleDarkMode}
+      >
         <span id="icon">🌞</span>
       </button>
 
@@ -57,7 +82,7 @@ const DesignerProfile = () => {
             <h2>پروفایل طراح</h2>
             <p>نام کاربری: {profile.username}</p>
             <p>تعداد دنبال‌کنندگان: {profile.follower_count}</p>
-            <p>تعداد سوالات طراحی شده: {profile.following_count}</p>
+            <p>تعداد سوالات طراحی‌شده: {profile.following_count}</p>
           </>
         ) : (
           <p>در حال بارگذاری...</p>

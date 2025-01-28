@@ -5,39 +5,41 @@ const Login = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    role: "player", // نقش پیش‌فرض
+    role: "player",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    // وقتی وارد صفحه می‌شویم، حالت تاریک را غیرفعال می‌کنیم
     document.body.classList.remove("dark-mode");
   }, []);
 
+  // تابعی که تغییرات ورودی‌های فرم را می‌گیرد
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // تابعی که روی دکمه «ورود» فراخوانی می‌شود
   const handleLogin = async (event) => {
     event.preventDefault();
-
-    const { username, password, role } = formData;
+    
     setError("");
     setSuccess("");
 
+    const { username, password, role } = formData;
+
+    // اگر می‌خواهید صرفاً با کلیک روی دکمه ورود، username را در LocalStorage بگذارید:
+    localStorage.setItem("username", username);
+
+    // کد ارسال درخواست به سرور...
     try {
-      // آماده‌سازی داده‌ها برای ارسال با فرمت x-www-form-urlencoded
       const formBody = new URLSearchParams({
         username: username,
         password: password,
         personType: role.toUpperCase(),
       }).toString();
-      
-      console.log(formBody);
 
-      // ارسال درخواست لاگین به سرور
       const response = await fetch("http://localhost:8080/signin", {
         method: "POST",
         headers: {
@@ -46,40 +48,49 @@ const Login = () => {
         body: formBody,
       });
 
-
       const result = await response.json();
 
       if (response.ok && result.responseHeader === "OK") {
         setSuccess("ورود با موفقیت انجام شد!");
 
-        // در result.dto باید فیلدهای PersonDto را داشته باشیم
-        // از جمله: id, username, password, personType, ...
+        // پاسخ سرور را تحلیل می‌کنید
         const personDto = result.dto;
 
-        // ذخیره در localStorage
-        localStorage.setItem("username", personDto.username);
-        localStorage.setItem("currentUserId", personDto.id);
+        // فرضاً آیدی کاربر هم نگه می‌دارید
+        localStorage.setItem("currentUserId", result.dto.data.id);
+        localStorage.setItem("userToken",  result.dto.data.token);
 
-        // هدایت بر اساس نقش انتخاب‌شده در فرم
-        // (اگر نقش را واقعاً بخواهید از سرور بگیرید، باید از personDto.personType استفاده کنید.)
+        
+
+        // هدایت به صفحه بعد
         if (role === "player") {
           window.location.href = "/player";
-        } else if (role === "designer") {
+        } else {
           window.location.href = "/designer";
         }
-      } else if (result.responseHeader === "USERNAME_NOT_EXISTS") {
+      }
+      else if (result.responseHeader === "USERNAME_NOT_EXISTS") {
         setError("نام کاربری وجود ندارد.");
-      } else if (result.responseHeader === "WRONG_ROLE") {
+      }
+      else if (result.responseHeader === "WRONG_ROLE") {
         setError("نقش اشتباه است.");
-      } else if (result.responseHeader === "WRONG_PASSWORD") {
+      }
+      else if (result.responseHeader === "WRONG_PASSWORD") {
         setError("رمز عبور اشتباه است.");
-      } else {
+      }
+      else {
         setError("خطایی رخ داده است. لطفاً دوباره تلاش کنید.");
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Error details:", error);
       setError("خطا در برقراری ارتباط با سرور رخ داده است.");
     }
+  };
+
+  // دکمه حالت تاریک
+  const toggleDarkMode = () => {
+    document.body.classList.toggle("dark-mode");
   };
 
   return (
@@ -88,6 +99,7 @@ const Login = () => {
         <h2>ورود به سامانه سوال پیچ</h2>
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
+
         <form id="loginForm" onSubmit={handleLogin}>
           <div className="input-group">
             <label htmlFor="username">نام کاربری:</label>
@@ -131,17 +143,17 @@ const Login = () => {
             ورود
           </button>
         </form>
+
         <div className="signup-link">
           <p>
             حساب کاربری ندارید؟ <a href="/signup">ثبت‌نام کنید</a>
           </p>
         </div>
 
-        {/* دکمه حالت تاریک (dark mode) */}
         <button
           id="dark-mode-toggle"
           className="dark-mode-btn"
-          onClick={() => document.body.classList.toggle("dark-mode")}
+          onClick={toggleDarkMode}
         >
           <span id="icon">🌞</span>
         </button>

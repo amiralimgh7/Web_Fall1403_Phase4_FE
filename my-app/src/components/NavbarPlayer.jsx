@@ -7,13 +7,13 @@ const NavbarPlayer = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("userToken");
-    navigate("/");
+    navigate("/login");
   };
 
   return (
     <nav className="menu">
       <div className="menu-section">
-        <Link to="/player/profile/main" id="profile-link">
+        <Link to="/player/profile" id="profile-link">
           پروفایل
         </Link>
         <span className="material-icons">person</span>

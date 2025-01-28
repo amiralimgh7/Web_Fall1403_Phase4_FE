@@ -7,30 +7,51 @@ const Feed = () => {
   const [questions, setQuestions] = useState([]);
   const [error, setError] = useState("");
 
-  // از localStorage شناسه و نام کاربری کاربر فعلی را می‌خوانیم
+  // شناسه و نام کاربری کاربر فعلی
   const currentUserId = localStorage.getItem("currentUserId"); 
   const username = localStorage.getItem("username");
 
-  // تابع گرفتن سؤالات فید
-  const fetchFeedQuestions = async () => {
-    try {
-      // با توجه به Backend:
-      //  GET /feed?username=...
-      //  در params می‌توان userId را هم ارسال کرد، اما طبق کد فعلی بک‌اند،
-      //  ظاهراً feed فقط با username کاربر را پیدا می‌کند.
-      const response = await axios.get(`http://localhost:8080/feed?username=${username}`);
+  // توکن را از localStorage می‌خوانیم
+  const token = localStorage.getItem("userToken");
 
+  /**
+   * گرفتن سؤالات فید از سرور
+   */
+  const fetchFeedQuestions = async () => {
+    // اگر توکن یا نام کاربری موجود نباشد، خطا می‌دهیم
+    if (!token) {
+      setError("توکن یافت نشد. لطفاً ابتدا وارد شوید.");
+      return;
+    }
+    if (!username) {
+      setError("نام کاربری یافت نشد. لطفاً ابتدا وارد شوید.");
+      return;
+    }
+
+    try {
+      // ارسال درخواست به سرور با هدر Authorization
+      const response = await axios.get(
+        `http://localhost:8080/feed?username=${username}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // بررسی فیلد responseHeader
       if (response.data.responseHeader === "OK") {
         const rawQuestions = response.data.dto.questions || [];
-        // لازم است داده را فرمت کنیم تا گزینه‌ها (options) و غیره مرتب شوند
+        // فرمت‌دهی داده‌ها
         const newQuestions = rawQuestions.map((q) => ({
           id: q.id,
           text: q.question,
           options: [q.answer1, q.answer2, q.answer3, q.answer4],
-          correctAnswer: q.correctAnswer, // اینجا رشته است. مثلاً "2"
+          correctAnswer: q.correctAnswer, // مثلاً "2"
           category: q.category,
           difficulty: q.hardness, // مثلاً "1", "2", "3"
         }));
+
         setQuestions(newQuestions);
         setError("");
       } else {
@@ -42,23 +63,38 @@ const Feed = () => {
     }
   };
 
-  // تابع برای پاسخ‌دادن به سؤال
+  /**
+   * تابع ارسال پاسخ سؤال
+   */
   const handleAnswer = async (questionId, selectedOption) => {
+    if (!token) {
+      alert("توکن یافت نشد. لطفاً ابتدا وارد شوید.");
+      return;
+    }
+    if (!username) {
+      alert("نام کاربری یافت نشد. لطفاً ابتدا وارد شوید.");
+      return;
+    }
+
     try {
-      // API شما: POST /answer-question
-      // با پارامترهای username, questionId, answer
-      const response = await axios.post("http://localhost:8080/answer-question", null, {
-        params: {
-          username: username,         // نام کاربری لاگین‌شده
-          questionId: questionId,     // شناسه سؤال
-          answer: selectedOption,      // گزینه انتخابی (۱ تا ۴)
-        },
-      });
+      // مثال: POST /answer-question?username=...&questionId=...&answer=...
+      const response = await axios.post(
+        "http://localhost:8080/answer-question",
+        null, // بدنه خالی
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            username: username,
+            questionId: questionId,
+            answer: selectedOption,
+          },
+        }
+      );
 
       if (response.data.responseHeader === "OK") {
-        // بک‌اند در فیلد dto ممکن است correctAnswer واقعی را برگرداند.
-        // طبق کد شما: برمی‌گرداند IntegerDto با value = correctAnswer
-        const correctAnswer = response.data.dto.value;
+        const correctAnswer = response.data.dto.value; // پاسخ درست
         if (+correctAnswer === selectedOption) {
           alert("پاسخ صحیح است! امتیاز شما افزایش یافت.");
         } else {
@@ -73,10 +109,20 @@ const Feed = () => {
     }
   };
 
-  // در بارگذاری اولیه صفحه، فید را می‌گیریم
+  /**
+   * در بارگذاری اولیه صفحه، سؤالات فید را می‌گیریم
+   */
   useEffect(() => {
     fetchFeedQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /**
+   * تابع تغییر حالت تاریک
+   */
+  const toggleDarkMode = () => {
+    document.body.classList.toggle("dark-mode");
+  };
 
   return (
     <div className="main-container">
@@ -85,7 +131,7 @@ const Feed = () => {
       <button
         id="dark-mode-toggle"
         className="dark-mode-btn"
-        onClick={() => document.body.classList.toggle("dark-mode")}
+        onClick={toggleDarkMode}
       >
         <span id="icon">🌞</span>
       </button>
@@ -113,16 +159,10 @@ const Feed = () => {
 
             <p>دسته‌بندی: {question.category}</p>
             <p>درجه دشواری: {question.difficulty}</p>
-
-            {/* نمایش پاسخ درست به صورت ثابت (اگر می‌خواهید همیشه نشان دهید) 
-            
-            /* <p>پاسخ درست: گزینه {question.correctAnswer}</p>
-            
-            */}
-           
           </div>
         ))}
 
+        {/* اگر هیچ سوالی نداشتیم و خطایی هم نبود */}
         {questions.length === 0 && !error && (
           <p>هیچ سوالی برای نمایش وجود ندارد.</p>
         )}
